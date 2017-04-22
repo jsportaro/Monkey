@@ -17,6 +17,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
+	token.LPAREN:   CALL,
 }
 
 const (
@@ -84,6 +85,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
+	p.registerInfix(token.LPAREN, p.parseCallExpression)
 
 	return p
 }
@@ -167,8 +169,80 @@ func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.currentToken, Value: p.currentTokenIs(token.TRUE)}
 }
 
-func (p *Parser) parseFunctionLiteral() ast.Expression {
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	expression := &ast.CallExpression{Token: p.currentToken, Function: function}
+	expression.Arguments = p.parseCallArguments()
 
+	return expression
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	if p.peekedTokenIs(token.RPAREN) {
+		p.nextToken()
+	} else {
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+
+		for p.peekedTokenIs(token.COMMA) {
+			p.nextToken()
+			p.nextToken()
+			args = append(args, p.parseExpression(LOWEST))
+		}
+
+		if !p.expectPeek(token.RPAREN) {
+			return nil
+		}
+	}
+
+	return args
+}
+
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	literal := &ast.FunctionLiteral{Token: p.currentToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	literal.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	literal.Body = p.parseBlockStatement()
+
+	return literal
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	identifiers := []*ast.Identifier{}
+
+	if p.peekedTokenIs(token.RPAREN) {
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+
+	ident := &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
+	identifiers = append(identifiers, ident)
+
+	for p.peekedTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+
+		ident := &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
+		identifiers = append(identifiers, ident)
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return identifiers
 }
 
 func (p *Parser) parseIfExpression() ast.Expression {
@@ -217,7 +291,11 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	for !p.currentTokenIs(token.SEMICOLON) {
+	p.nextToken()
+
+	letStmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekedTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
@@ -320,7 +398,11 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	returnStmt := &ast.ReturnStatement{Token: p.currentToken}
 
-	for !p.currentTokenIs(token.SEMICOLON) {
+	p.nextToken()
+
+	returnStmt.ReturnValue = p.parseExpression(LOWEST)
+
+	if p.peekedTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
