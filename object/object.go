@@ -9,8 +9,12 @@ const (
 	BooleanObj = "BOOLEAN"
 	//IntegerObj int
 	IntegerObj = "INTEGER"
-	//Null null
+	//NullObj null
 	NullObj = "NULL"
+	//ReturnObj return
+	ReturnObj = "RETURN"
+	//ErrorObj error
+	ErrorObj = "ERROR"
 )
 
 //Object object

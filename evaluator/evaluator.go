@@ -3,6 +3,7 @@ package evaluator
 import (
 	"Monkey/ast"
 	"Monkey/object"
+	"fmt"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
-		return evaluateStatements(node.Statements)
+		return evaluateProgram(node)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 	case *ast.IntegerLiteral:
@@ -33,9 +34,12 @@ func Eval(node ast.Node) object.Object {
 		right := Eval(node.Right)
 		return evaluateInfixExpression(node.Operator, left, right)
 	case *ast.BlockStatement:
-		return evaluateStatements(node.Statements)
+		return evaluateBlockStatement(node)
 	case *ast.IfExpression:
 		return evaluateIfExpression(node)
+	case *ast.ReturnStatement:
+		val := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: val}
 	}
 
 	return nil
@@ -52,6 +56,20 @@ func evaluateBangOperatorExpression(right object.Object) object.Object {
 	default:
 		return FALSE
 	}
+}
+
+func evaluateBlockStatement(block *ast.BlockStatement) object.Object {
+	var result object.Object
+
+	for _, statement := range block.Statements {
+		result = Eval(statement)
+
+		if result != nil && result.Type() == object.ReturnObj {
+			return result
+		}
+	}
+
+	return result
 }
 
 func evaluateIfExpression(ie *ast.IfExpression) object.Object {
@@ -126,11 +144,15 @@ func evaluatePrefixExpression(operator string, right object.Object) object.Objec
 	}
 }
 
-func evaluateStatements(statements []ast.Statement) object.Object {
+func evaluateProgram(program *ast.Program) object.Object {
 	var result object.Object
 
-	for _, statement := range statements {
+	for _, statement := range program.Statements {
 		result = Eval(statement)
+
+		if returnValue, ok := result.(*object.ReturnValue); ok {
+			return returnValue.Value
+		}
 	}
 
 	return result
@@ -156,4 +178,8 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	}
 
 	return FALSE
+}
+
+func newError(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }

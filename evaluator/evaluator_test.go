@@ -44,6 +44,64 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
+func TestErrorHandling(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"5 + true;",
+			"type mismatch: INTEGER + BOOLEAN",
+		},
+		{
+			"5 + true; 5;",
+			"type mismatch: INTEGER + BOOLEAN",
+		},
+		{
+			"-true",
+			"unknown operator: -BOOLEAN",
+		},
+		{
+			"true + false",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			"5; true + false; 5;",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			"if (10 > 1) { true + false }",
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+		{
+			`
+			if (10 > 1) {
+				if (10 > 1) {
+					return true + false;
+				}
+
+				return 1;
+			}`,
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		errorObj, ok := evaluated.(*object.Error)
+		if !ok {
+			t.Errorf("no error object returned. got %T", evaluated)
+			continue
+		}
+
+		if errorObj.Message != tt.expected {
+			t.Errorf("Wong error message.  wanted %q but got %q", tt.expected, errorObj.Message)
+		}
+
+	}
+}
+
 func TestEvalBooleanExpression(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -207,6 +265,45 @@ func TestEvalIntegerExpression(t *testing.T) {
 		{
 			"2 + 3 * 3",
 			11,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{
+			"return 10;",
+			10,
+		},
+		{
+			"return 10; 9;",
+			10,
+		},
+		{
+			"return 2 * 5; 9;",
+			10,
+		},
+		{
+			"9; return 2 * 9; 9;",
+			18,
+		},
+		{
+			`if (10 > 1) {
+				if (10 > 1) {
+					return 10;
+				}
+
+				return 1
+			}`,
+			10,
 		},
 	}
 
