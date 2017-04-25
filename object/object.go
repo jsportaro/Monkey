@@ -15,6 +15,8 @@ const (
 	ReturnObj = "RETURN"
 	//ErrorObj error
 	ErrorObj = "ERROR"
+	//FunctionObj function
+	FunctionObj = "FUNCTION"
 )
 
 //Object object

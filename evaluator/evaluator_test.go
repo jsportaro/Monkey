@@ -44,6 +44,19 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
+func TestClosure(t *testing.T) {
+	input := `
+	let newAdder = fn(x) {
+			fn(y) { x + y; }
+	}
+	
+	let addTwo = newAdder(2);
+	
+	addTwo(2);`
+
+	testIntegerObject(t, testEval(input), 4)
+}
+
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -103,6 +116,42 @@ func TestErrorHandling(t *testing.T) {
 			t.Errorf("Wong error message.  wanted %q but got %q", tt.expected, errorObj.Message)
 		}
 
+	}
+}
+
+func TestFunctionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{
+			"let identity = fn(x) { x; }; identity(5);",
+			5,
+		},
+		{
+			"let identity = fn(x) { return x; }; identity(5);",
+			5,
+		},
+		{
+			"let double = fn(x) { x * 2; }; double(5);",
+			10,
+		},
+		{
+			"let add = fn(x, y) { x + y; }; add(5, 5);",
+			10,
+		},
+		{
+			"let add = fn(x, y) { x + y; }; add(5 + 5, add(5,5));",
+			20,
+		},
+		{
+			"fn(x){ x; }(5)",
+			5,
+		},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
 }
 
@@ -180,6 +229,30 @@ func TestEvalBooleanExpression(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestFunctionObject(t *testing.T) {
+	input := "fn(x) { x + 2; }"
+
+	evaluated := testEval(input)
+	fn, ok := evaluated.(*object.Function)
+	if !ok {
+		t.Fatalf("object is not Function but %T", evaluated)
+	}
+
+	if len(fn.Parameters) != 1 {
+		t.Fatalf("wanted 1 parameter but got %d", len(fn.Parameters))
+	}
+
+	if fn.Parameters[0].String() != "x" {
+		t.Fatalf("should've gotten x as a parameter but got %q", fn.Parameters[0])
+	}
+
+	expectedBody := "{ (x + 2) }"
+
+	if fn.Body.String() != expectedBody {
+		t.Fatalf("should've gotten %q but got %q for the body", expectedBody, fn.Body.String())
 	}
 }
 
