@@ -633,6 +633,26 @@ func TestReturnStatement(t *testing.T) {
 	}
 }
 
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"Hello, World!"`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserError(t, p)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	literal, ok := stmt.Expression.(*ast.StringLiteral)
+
+	if !ok {
+		t.Fatalf("wasn't a *ast.StringLiteral but %T", stmt.Expression)
+	}
+
+	if literal.Value != "Hello, World!" {
+		t.Errorf("I was expecting %q but somehow ended up with %q", input, literal.Value)
+	}
+}
+
 func checkParserError(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	errorCount := len(errors)

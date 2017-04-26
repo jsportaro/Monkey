@@ -17,6 +17,8 @@ const (
 	ErrorObj = "ERROR"
 	//FunctionObj function
 	FunctionObj = "FUNCTION"
+	//StringObj string
+	StringObj = "STRING"
 )
 
 //Object object
