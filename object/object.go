@@ -19,6 +19,8 @@ const (
 	FunctionObj = "FUNCTION"
 	//StringObj string
 	StringObj = "STRING"
+	//BuiltInObj builtin
+	BuiltInObj = "BUILTIN"
 )
 
 //Object object
