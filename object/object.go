@@ -21,6 +21,8 @@ const (
 	StringObj = "STRING"
 	//BuiltInObj builtin
 	BuiltInObj = "BUILTIN"
+	//ArrayObj array
+	ArrayObj = "ARRAY"
 )
 
 //Object object

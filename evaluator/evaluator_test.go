@@ -7,6 +7,84 @@ import (
 	"testing"
 )
 
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			"[1, 2, 3][0]",
+			1,
+		},
+		{
+			"[1, 2, 3][1]",
+			2,
+		},
+		{
+			"[1, 2, 3][2]",
+			3,
+		},
+		{
+			"let i =0; [1][i];",
+			1,
+		},
+		{
+			"[1, 2, 3][1 + 1]",
+			3,
+		},
+		{
+			"let a = [1, 2, 3]; a[2]",
+			3,
+		},
+		{
+			"let a = [1, 2, 3]; a[0] + a[1] + a[2];",
+			6,
+		},
+		{
+			"let a = [1, 2, 3]; let i = a[0]; a[i];",
+			2,
+		},
+		{
+			"[1, 2, 3][3]",
+			nil,
+		},
+		{
+			"[1, 2, 3][-1]",
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			if !testIntegerObject(t, evaluated, int64(integer)) {
+				t.Errorf("For %s", tt.input)
+			}
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}
+
+func TestArrayLiterals(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	evaluated := testEval(input)
+
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("Expected *object.Array but got %T", evaluated)
+	}
+
+	if len(result.Elements) != 3 {
+		t.Fatalf("array has wrong number of elements, got %d", len(result.Elements))
+	}
+
+	testIntegerObject(t, result.Elements[0], 1)
+	testIntegerObject(t, result.Elements[1], 4)
+	testIntegerObject(t, result.Elements[2], 6)
+}
+
 func TestBangOperator(t *testing.T) {
 	tests := []struct {
 		input    string

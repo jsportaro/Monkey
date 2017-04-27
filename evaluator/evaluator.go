@@ -78,8 +78,25 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return applyFunction(function, args)
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
-	}
+	case *ast.ArrayLiteral:
+		elements := evaluateExpressions(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
 
+		return &object.Array{Elements: elements}
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+
+		return evaluateIndexExpression(left, index)
+	}
 	return nil
 }
 
@@ -94,6 +111,18 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	default:
 		return newError("not a function %s", fn.Type())
 	}
+}
+
+func evaluateArrayIndexExpression(array object.Object, index object.Object) object.Object {
+	arrayObject := array.(*object.Array)
+	i := index.(*object.Integer).Value
+	max := int64(len(arrayObject.Elements) - 1)
+
+	if i < 0 || i > max {
+		return NULL
+	}
+
+	return arrayObject.Elements[i]
 }
 
 func evaluateBangOperatorExpression(right object.Object) object.Object {
@@ -150,6 +179,15 @@ func evaluateIdentifier(node *ast.Identifier, env *object.Environment) object.Ob
 	}
 
 	return newError("identifier not found: " + node.Value)
+}
+
+func evaluateIndexExpression(left object.Object, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ArrayObj && index.Type() == object.IntegerObj:
+		return evaluateArrayIndexExpression(left, index)
+	default:
+		return newError("index operator not supported: %s", left.Type())
+	}
 }
 
 func evaluateIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
