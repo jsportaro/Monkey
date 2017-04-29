@@ -49,6 +49,8 @@ const (
 
 	EQ     = "=="
 	NOT_EQ = "!="
+
+	COLON = ":"
 )
 
 //LookupIdent lookup

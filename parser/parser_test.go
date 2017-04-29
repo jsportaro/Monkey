@@ -78,6 +78,54 @@ func TestCallExpressionParsing(t *testing.T) {
 	testInfixExpression(t, callExpression.Arguments[2], 4, "+", 5)
 }
 
+func TestParsingEmptyHashLiteralString(t *testing.T) {
+	input := "{}"
+	program := parseProgram(input, t)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+
+	if !ok {
+		t.Fatalf("wanted a hash but ended up with a %T", stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 0 {
+		t.Errorf("hash.Pairs was wrong length.  got %d", len(hash.Pairs))
+	}
+}
+
+func TestParsingHashLiterals(t *testing.T) {
+	input := `{"one": 1, "two": 2, "three": 3}`
+	program := parseProgram(input, t)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("wanted a hash but ended up with a %T", stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 3 {
+		t.Errorf("hash.Pairs was wrong length.  got %d", len(hash.Pairs))
+	}
+
+	expected := map[string]int64{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.StringLiteral)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral but %T", key)
+		}
+
+		expectedValue := expected[literal.String()]
+
+		testIntegerLiteral(t, value, expectedValue)
+	}
+}
+
 func TestIdentifierExpression(t *testing.T) {
 	input := `foobar;`
 

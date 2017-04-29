@@ -23,6 +23,8 @@ const (
 	BuiltInObj = "BUILTIN"
 	//ArrayObj array
 	ArrayObj = "ARRAY"
+	//HashObj hash
+	HashObj = "HASH"
 )
 
 //Object object

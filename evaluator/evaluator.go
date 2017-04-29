@@ -96,7 +96,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		return evaluateIndexExpression(left, index)
+	case *ast.HashLiteral:
+		return evaluateHashLiteral(node, env)
 	}
+
 	return nil
 }
 
@@ -169,6 +172,47 @@ func evaluateExpressions(exps []ast.Expression, env *object.Environment) []objec
 	return result
 }
 
+func evaluateHashIndexExpression(left object.Object, index object.Object) object.Object {
+	hashObject := left.(*object.Hash)
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newError("unusable as a hash key: %s", index.Type())
+	}
+
+	pair, ok := hashObject.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+
+	return pair.Value
+}
+
+func evaluateHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for keyNode, valueNode := range node.Pairs {
+		key := Eval(keyNode, env)
+		if isError(key) {
+			return key
+		}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError("unusable as a hash key: %s", key.Type())
+		}
+
+		value := Eval(valueNode, env)
+		if isError(key) {
+			return value
+		}
+
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+
+	return &object.Hash{Pairs: pairs}
+}
+
 func evaluateIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
 	if val, ok := env.Get(node.Value); ok {
 		return val
@@ -185,6 +229,8 @@ func evaluateIndexExpression(left object.Object, index object.Object) object.Obj
 	switch {
 	case left.Type() == object.ArrayObj && index.Type() == object.IntegerObj:
 		return evaluateArrayIndexExpression(left, index)
+	case left.Type() == object.HashObj:
+		return evaluateHashIndexExpression(left, index)
 	default:
 		return newError("index operator not supported: %s", left.Type())
 	}
