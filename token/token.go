@@ -19,7 +19,7 @@ const (
 	// Operators
 	ASSIGN   = "="
 	PLUS     = "+"
-	MINUS    = "="
+	MINUS    = "-"
 	BANG     = "!"
 	ASTERISK = "*"
 	SLASH    = "/"
@@ -51,6 +51,8 @@ const (
 	NOT_EQ = "!="
 
 	COLON = ":"
+
+	WHILE = "while"
 )
 
 //LookupIdent lookup
@@ -70,4 +72,5 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 	"true":   TRUE,
 	"false":  FALSE,
+	"while":  WHILE,
 }

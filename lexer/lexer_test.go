@@ -34,6 +34,8 @@ func TestNextToken(t *testing.T) {
 	[1, 2];
 
 	{"name": "joe", true: "is a boolean"}
+
+	while (true) {  }
 	`
 
 	tests := []struct {
@@ -130,6 +132,12 @@ func TestNextToken(t *testing.T) {
 		{token.TRUE, "true"},
 		{token.COLON, ":"},
 		{token.STRING, "is a boolean"},
+		{token.RBRACE, "}"},
+		{token.WHILE, "while"},
+		{token.LPAREN, "("},
+		{token.TRUE, "true"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
 		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}

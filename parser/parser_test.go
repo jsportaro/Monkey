@@ -78,6 +78,40 @@ func TestCallExpressionParsing(t *testing.T) {
 	testInfixExpression(t, callExpression.Arguments[2], 4, "+", 5)
 }
 
+func TestWhileExpressionParsing(t *testing.T) {
+	input := `while (x < y) { let x = x + 1; }`
+	program := parseProgram(input, t)
+
+	stmtCount := len(program.Statements)
+	if stmtCount != 1 {
+		t.Fatalf("program.Statements does not have 2 statement but %d\n", stmtCount)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement but %T", program.Statements[0])
+	}
+
+	expression, ok := stmt.Expression.(*ast.WhileExpression)
+	if !ok {
+		t.Fatalf("stmt.Statement is not ast.WhileExpression but %T", stmt.Expression)
+	}
+
+	if !testInfixExpression(t, expression.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(expression.Body.Statements) != 1 {
+		t.Errorf("body is not 1 statement")
+	}
+
+	_, ok = expression.Body.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("Statement[0] is not ast.ExpressionStatement")
+	}
+
+}
+
 func TestParsingEmptyHashLiteralString(t *testing.T) {
 	input := "{}"
 	program := parseProgram(input, t)

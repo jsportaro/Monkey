@@ -686,6 +686,21 @@ func TestLetStatement(t *testing.T) {
 	}
 }
 
+func TestWhileStatement(t *testing.T) {
+	input := `
+	let x = 0;
+	
+	while (x < 5) 
+	{
+		let x = x + 1;
+	}
+	
+	x;`
+
+	evaluated := testEval(input)
+	testIntegerObject(t, evaluated, int64(5))
+}
+
 func testEval(input string) object.Object {
 
 	l := lexer.New(input)

@@ -98,6 +98,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evaluateIndexExpression(left, index)
 	case *ast.HashLiteral:
 		return evaluateHashLiteral(node, env)
+	case *ast.WhileExpression:
+		return evaluateWhileExpression(node, env)
 	}
 
 	return nil
@@ -341,6 +343,26 @@ func evaluateStringInfixExpression(operator string, left object.Object, right ob
 	rightVal := right.(*object.String).Value
 
 	return &object.String{Value: leftVal + rightVal}
+}
+
+func evaluateWhileExpression(we *ast.WhileExpression, env *object.Environment) object.Object {
+	runs := 0
+
+	for {
+		condition := Eval(we.Condition, env)
+		if isError(condition) {
+			return condition
+		}
+
+		runs = runs + 1
+		if isTruthy(condition) {
+			Eval(we.Body, env)
+		} else {
+			break
+		}
+	}
+
+	return &object.Integer{Value: int64(runs)}
 }
 
 func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
