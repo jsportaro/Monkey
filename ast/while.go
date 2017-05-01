@@ -3,7 +3,8 @@ package ast
 import "Monkey/token"
 import "bytes"
 
-//WhileExpression while (<expression>) { <statements> }
+//WhileExpression while (<expression>) { <statements> } will evaluate
+//to the number of times the condition was evaluated
 type WhileExpression struct {
 	Token     token.Token
 	Condition Expression
