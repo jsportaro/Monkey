@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 import "bytes"
 
 //IfExpression if (<condition>) <consequence> else <alternative>

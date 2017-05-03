@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 
 //ExpressionStatement Example: x + 5;
 type ExpressionStatement struct {

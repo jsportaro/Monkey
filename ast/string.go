@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 
 //StringLiteral "<sequence of characters>""
 type StringLiteral struct {

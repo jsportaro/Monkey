@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 import "bytes"
 
 //WhileExpression while (<expression>) { <statements> } will evaluate

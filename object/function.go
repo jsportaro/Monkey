@@ -1,6 +1,6 @@
 package object
 
-import "Monkey/ast"
+import "monkey/ast"
 import "bytes"
 import "strings"
 

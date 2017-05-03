@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 
 //IntegerLiteral 1,2,3,4,...
 type IntegerLiteral struct {

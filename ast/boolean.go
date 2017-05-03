@@ -1,6 +1,6 @@
 package ast
 
-import "Monkey/token"
+import "monkey/token"
 
 //Boolean true/false
 type Boolean struct {

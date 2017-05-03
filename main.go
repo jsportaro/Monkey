@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Monkey/repl"
+	"monkey/repl"
 	"fmt"
 	"os"
 	"os/user"
@@ -14,7 +14,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Hello %s! This is the Monkey programming language!\n", user.Username)
+	fmt.Printf("Hello %s! This is the monkey programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
 
 	repl.Start(os.Stdin, os.Stdout)

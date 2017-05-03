@@ -1,8 +1,8 @@
 package lexer
 
-import "Monkey/token"
+import "monkey/token"
 
-//Lexer Monkey's work-in-progress lexer
+//Lexer monkey's work-in-progress lexer
 type Lexer struct {
 	input        string
 	position     int

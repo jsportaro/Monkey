@@ -1,6 +1,6 @@
 package evaluator
 
-import "Monkey/object"
+import "monkey/object"
 import "fmt"
 
 var builtins = map[string]*object.BuiltIn{
